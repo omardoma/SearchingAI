@@ -1,10 +1,17 @@
 package Search;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class Problem {
     private List<Operator> operators;
     private State initialState;
+    private int depthLimit;
+
+    public Problem() {
+        depthLimit = Integer.MAX_VALUE;
+    }
 
     public List<Operator> getOperators() {
         return operators;
@@ -20,6 +27,10 @@ public abstract class Problem {
 
     public void setInitialState(State initialState) {
         this.initialState = initialState;
+    }
+
+    public int getDepthLimit() {
+        return depthLimit;
     }
 
     public abstract boolean isGoal(State state);
@@ -42,7 +53,24 @@ public abstract class Problem {
         return getChosenExpandedNodes(node).stream().skip(1).mapToDouble(currentNode -> node.getOperator().getCost()).sum();
     }
 
-    public static Node generalSearch(Problem problem, Strategy strategy, int limit) {
+    private static boolean isRepeatedState(State testState, List<State> repeatedStates) {
+        return repeatedStates.stream().anyMatch(state -> state.isSame(testState));
+    }
+
+    public static Node iterativeDeepeningSearch(Problem problem) {
+        problem.depthLimit = 0;
+        Node goalNode = null;
+        while (problem.depthLimit < Integer.MAX_VALUE) {
+            goalNode = generalSearch(problem, Strategy.ID);
+            if (goalNode != null) {
+                break;
+            }
+            problem.depthLimit++;
+        }
+        return goalNode;
+    }
+
+    public static Node generalSearch(Problem problem, Strategy strategy) {
         List<State> repeatedStates = new ArrayList();
         LinkedList<Node> nodes = new LinkedList<>();
         nodes.add(new Node(problem.initialState, null, 0, null));
@@ -53,7 +81,7 @@ public abstract class Problem {
                 return node;
             }
             for (Node successorNode : problem.expand(node, problem.operators)) {
-                if (!repeatedStates.stream().anyMatch(state -> state.isSame(successorNode.getState()))) {
+                if (!isRepeatedState(successorNode.getState(), repeatedStates)) {
                     switch (strategy) {
                         case BF:
                             nodes.addLast(successorNode);
@@ -62,12 +90,8 @@ public abstract class Problem {
                             nodes.addFirst(successorNode);
                             break;
                         case ID:
-                            if (successorNode.getDepth() <= limit) {
-                                nodes.addFirst(successorNode);
-                                break;
-                            } else {
-                                return null;
-                            }
+                            nodes.addFirst(successorNode);
+                            break;
                         case UC:
                             if (calculatePathCost(node) < calculatePathCost(successorNode)) {
                                 nodes.addLast(successorNode);

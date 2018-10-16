@@ -2,7 +2,8 @@ package SaveWesteros;
 
 import Search.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -12,12 +13,12 @@ public class SaveWesteros extends Problem {
     private List<Cell> obstacles;
     private Cell dragonStone;
     private int agentCapacity;
-    private Strategy strategy;
     public static final double PICKUP_COST = 6;
     public static final double MOVE_COST = 5;
     public static final double KILL_COST = 4;
 
     public SaveWesteros() {
+        super();
         initOperators();
         whiteWalkers = new ArrayList<>();
         obstacles = new ArrayList<>();
@@ -43,10 +44,6 @@ public class SaveWesteros extends Problem {
         return agentCapacity;
     }
 
-    public Strategy getStrategy() {
-        return strategy;
-    }
-
     private void initOperators() {
         List<Operator> operators = new ArrayList<>();
         operators.add(new Operator("UP", MOVE_COST));
@@ -58,7 +55,11 @@ public class SaveWesteros extends Problem {
         super.setOperators(operators);
     }
 
-    private void getDataFromGrid() {
+    private List<Cell> cloneCells(List<Cell> cells) {
+        return new ArrayList<>(cells);
+    }
+
+    private void prepareSearch() {
         whiteWalkers = grid.getWhiteWalkers();
         obstacles = grid.getObstacles();
         agentCapacity = whiteWalkers.size();
@@ -66,57 +67,37 @@ public class SaveWesteros extends Problem {
         super.setInitialState(new SaveWesterosState(cloneCells(whiteWalkers), grid.getAgentCell(), 0));
     }
 
-    public Grid genGrid() {
-        return new Grid();
-    }
-
-    public Grid genGrid(int n) throws Exception {
-        return new Grid(n);
-    }
-
-    public Grid genGrid(int m, int n) throws Exception {
-        return new Grid(m, n);
-    }
-
-    private List<Cell> cloneCells(List<Cell> cells) {
-        return new ArrayList<>(cells);
-    }
-
     private String getSequenceOfMoves(List<Node> expandedNodes) {
         return String.join(" -> ", expandedNodes.stream().skip(1).map(node -> node.getOperator().getName()).collect(Collectors.toList()));
     }
 
-    private void visualizeGrid(State state) {
-        SaveWesterosState westerosState = (SaveWesterosState) state;
-        List<Cell> currentWhiteWalkers = westerosState.getWhiteWalkers();
+    private void visualizeGrid(List<Node> expandedNodes) {
         Cell[][] cells = grid.getCells();
-        Cell currentAgentCell = westerosState.getAgentCell();
+        List<Cell> stateWhiteWalkers;
+        Cell stateAgentCell;
         Cell current;
-        System.out.println();
-        System.out.println();
-        for (int i = 0; i < grid.getM(); i++) {
-            for (int j = 0; j < grid.getN(); j++) {
-                current = cells[i][j];
-                System.out.print("[" + (obstacles.contains(current) ? "O" : currentWhiteWalkers.contains(current) ? "W" : current == dragonStone ? "D" : current == currentAgentCell ? "A" : "E") + "]");
+        for (SaveWesterosState state : expandedNodes.stream().map(node -> (SaveWesterosState) node.getState()).collect(Collectors.toList())) {
+            stateWhiteWalkers = state.getWhiteWalkers();
+            stateAgentCell = state.getAgentCell();
+            System.out.println();
+            System.out.println();
+            for (int i = 0; i < grid.getM(); i++) {
+                for (int j = 0; j < grid.getN(); j++) {
+                    current = cells[i][j];
+                    System.out.print("[" + (obstacles.contains(current) ? "O" : stateWhiteWalkers.contains(current) ? "W" : current == dragonStone ? "D" : current == stateAgentCell ? "A" : "E") + "]");
+                }
+                System.out.println();
             }
             System.out.println();
+            System.out.println();
         }
-        System.out.println();
-        System.out.println();
     }
 
-    @Override
-    public boolean isGoal(State state) {
-//        System.out.println("DG " + ((SaveWesterosState) state).getDragonGlass());
-//        System.out.println("No of WW: " + ((SaveWesterosState) state).getWhiteWalkers().size());
-        return ((SaveWesterosState) state).getWhiteWalkers().isEmpty();
-    }
-
-    public boolean canVisitCell(Cell cell) {
+    private boolean canVisitCell(Cell cell) {
         return !(whiteWalkers.contains(cell) || obstacles.contains(cell));
     }
 
-    public SaveWesterosState killWhiteWalkers(List<Cell> whiteWalkers, Cell currentAgentCell, int dragonGlass) {
+    private SaveWesterosState killWhiteWalkers(List<Cell> whiteWalkers, Cell currentAgentCell, int dragonGlass) {
         List<Cell> clonedWhiteWalkers = cloneCells(whiteWalkers);
         int row = currentAgentCell.getRow();
         int col = currentAgentCell.getCol();
@@ -131,14 +112,37 @@ public class SaveWesteros extends Problem {
         return new SaveWesterosState(clonedWhiteWalkers, currentAgentCell, dragonGlass);
     }
 
+    public Grid genGrid() {
+        return new Grid();
+    }
+
+    public Grid genGrid(int n) throws Exception {
+        return new Grid(n);
+    }
+
+    public Grid genGrid(int m, int n) throws Exception {
+        return new Grid(m, n);
+    }
+
+    @Override
+    public boolean isGoal(State state) {
+        return ((SaveWesterosState) state).getWhiteWalkers().isEmpty();
+    }
+
     @Override
     public List<Node> expand(Node node, List<Operator> operators) {
-        SaveWesterosState state = (SaveWesterosState) node.getState();
-        Cell currentAgentCell = state.getAgentCell();
-        int row = currentAgentCell.getRow();
-        int col = currentAgentCell.getCol();
-        Cell[][] cells = grid.getCells();
         List<Node> expansion = new ArrayList<>();
+
+        // Return empty list in case of Iterative Deepening Search with exceeded limit for the generalSearch to stop
+        if (node.getDepth() > super.getDepthLimit()) {
+            return expansion;
+        }
+
+        SaveWesterosState state = (SaveWesterosState) node.getState();
+        Cell stateAgentCell = state.getAgentCell();
+        int row = stateAgentCell.getRow();
+        int col = stateAgentCell.getCol();
+        Cell[][] cells = grid.getCells();
         List<Cell> stateWhiteWalkers;
         Cell nextAgentCell;
 
@@ -177,37 +181,32 @@ public class SaveWesteros extends Problem {
                     }
                     break;
                 case "PICKUP":
-                    if (currentAgentCell == dragonStone) {
-                        expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), currentAgentCell, agentCapacity), node, node.getDepth() + 1, operator));
+                    if (stateAgentCell == dragonStone) {
+                        expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), stateAgentCell, agentCapacity), node, node.getDepth() + 1, operator));
                     }
                     break;
                 case "KILL":
                     stateWhiteWalkers = state.getWhiteWalkers();
                     if (!stateWhiteWalkers.isEmpty() && state.getDragonGlass() > 0) {
-                        SaveWesterosState newState = killWhiteWalkers(stateWhiteWalkers, currentAgentCell, state.getDragonGlass());
+                        SaveWesterosState newState = killWhiteWalkers(stateWhiteWalkers, stateAgentCell, state.getDragonGlass());
                         expansion.add(new Node(newState, node, node.getDepth() + 1, new Operator("KILL", KILL_COST - (stateWhiteWalkers.size() - newState.getWhiteWalkers().size()))));
                     }
                     break;
             }
         }
-
         return expansion;
     }
 
     public List search(Grid grid, Strategy strategy, boolean visualize) {
         this.grid = grid;
-        this.strategy = strategy;
-        getDataFromGrid();
-        int limit = 0;
-        Node goalNode = null;
-        if (strategy == Strategy.ID) {
-            while (goalNode == null) {
-                goalNode = Problem.generalSearch(this, strategy, limit++);
-            }
-        } else {
-            goalNode = Problem.generalSearch(this, strategy, 0);
-        }
+        prepareSearch();
         List result = new ArrayList();
+        Node goalNode;
+        if (strategy == Strategy.ID) {
+            goalNode = iterativeDeepeningSearch(this);
+        } else {
+            goalNode = generalSearch(this, strategy);
+        }
         if (goalNode != null) {
             List<Node> chosenExpandedNodes = getChosenExpandedNodes(goalNode);
             String sequenceOfMoves = getSequenceOfMoves(chosenExpandedNodes);
@@ -217,9 +216,7 @@ public class SaveWesteros extends Problem {
             }
             int chosenExpandedNodesCount = chosenExpandedNodes.size() - 1;
             if (visualize) {
-                for (State state : chosenExpandedNodes.stream().map(node -> node.getState()).collect(Collectors.toList())) {
-                    visualizeGrid(state);
-                }
+                visualizeGrid(chosenExpandedNodes);
             }
             result.add(sequenceOfMoves);
             result.add(solutionCost);
@@ -228,15 +225,64 @@ public class SaveWesteros extends Problem {
         return result;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         SaveWesteros saveWesteros = new SaveWesteros();
-        Grid grid = saveWesteros.genGrid(4);
-        List result = saveWesteros.search(grid, Strategy.BF, true);
+        Grid grid = saveWesteros.genGrid();
+
+        System.out.println("\n\n-------------------Breadth First-----------------\n\n");
+
+        List result = saveWesteros.search(grid, Strategy.BF, false);
         if (!result.isEmpty()) {
-            System.out.println();
+            grid.printGridInfo();
+            System.out.println("Sequence of Moves: " + result.get(0));
+            System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
+        }
+
+        System.out.println("\n\n-------------------Breadth First-----------------\n\n");
+
+
+        System.out.println("\n\n-------------------Depth First-----------------\n\n");
+
+        result = saveWesteros.search(grid, Strategy.DF, false);
+        if (!result.isEmpty()) {
+            grid.printGridInfo();
+            System.out.println("Sequence of Moves: " + result.get(0));
+            System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
+        }
+
+        System.out.println("\n\n-------------------Depth First-----------------\n\n");
+
+
+        System.out.println("\n\n-------------------Uniform Cost-----------------\n\n");
+
+        result = saveWesteros.search(grid, Strategy.UC, false);
+        if (!result.isEmpty()) {
+            grid.printGridInfo();
             System.out.println("Sequence of Moves: " + result.get(0));
             System.out.println("Solution Cost: " + result.get(1));
             System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
         }
+
+        System.out.println("\n\n-------------------Uniform Cost-----------------\n\n");
+
+
+        System.out.println("\n\n-------------------Iterative Deepening-----------------\n\n");
+
+        result = saveWesteros.search(grid, Strategy.ID, false);
+        if (!result.isEmpty()) {
+            grid.printGridInfo();
+            System.out.println("Depth Limit: " + saveWesteros.getDepthLimit());
+            System.out.println("Sequence of Moves: " + result.get(0));
+            System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
+        }
+        System.out.println("\n\n-------------------Iterative Deepening-----------------\n\n");
     }
 }

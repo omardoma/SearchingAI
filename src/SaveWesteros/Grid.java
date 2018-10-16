@@ -1,6 +1,8 @@
 package SaveWesteros;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Grid {
     private int m;
@@ -81,14 +83,11 @@ public class Grid {
 
     private void generateMap() {
         Random rand = new Random();
-        int whiteWalkersNumber = rand.nextInt(n / 2) + MIN_WHITE_WALKERS;
-        int obstaclesNumber = rand.nextInt(n / 2) + MIN_OBSTACLES;
+        int whiteWalkersNumber = rand.nextInt(n / 4) + MIN_WHITE_WALKERS;
+        int obstaclesNumber = rand.nextInt(n / 4) + MIN_OBSTACLES;
         int tmpRow = m - 1;
         int tmpCol = n - 1;
         List<String> existingCoordinates = new ArrayList<>();
-
-        System.out.println("No. of White Walkers: " + whiteWalkersNumber);
-        System.out.println("No. of Obstacles: " + obstaclesNumber);
 
         // Place agent
         agentCell = cells[tmpRow][tmpCol];
@@ -121,5 +120,11 @@ public class Grid {
             tmpCol = rand.nextInt(n);
         } while (existingCoordinates.contains(tmpRow + " " + tmpCol));
         dragonStone = cells[tmpRow][tmpCol];
+    }
+
+    public void printGridInfo() {
+        System.out.println("Generated Grid Size: " + m + " x " + n);
+        System.out.println("No. of White Walkers: " + whiteWalkers.size());
+        System.out.println("No. of Obstacles: " + obstacles.size());
     }
 }
