@@ -3,6 +3,7 @@ package SaveWesteros;
 import Search.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -45,14 +46,7 @@ public class SaveWesteros extends Problem {
     }
 
     private void initOperators() {
-        List<Operator> operators = new ArrayList<>();
-        operators.add(new Operator("UP", MOVE_COST));
-        operators.add(new Operator("DOWN", MOVE_COST));
-        operators.add(new Operator("LEFT", MOVE_COST));
-        operators.add(new Operator("RIGHT", MOVE_COST));
-        operators.add(new Operator("KILL"));
-        operators.add(new Operator("PICKUP", PICKUP_COST));
-        super.setOperators(operators);
+        super.setOperators(Arrays.asList("UP", "DOWN", "LEFT", "RIGHT", "PICKUP", "KILL"));
     }
 
     private List<Cell> cloneCells(List<Cell> cells) {
@@ -130,7 +124,7 @@ public class SaveWesteros extends Problem {
     }
 
     @Override
-    public List<Node> expand(Node node, List<Operator> operators) {
+    public List<Node> expand(Node node, List<String> operators) {
         List<Node> expansion = new ArrayList<>();
 
         // Return empty list in case of Iterative Deepening Search with exceeded limit for the generalSearch to stop
@@ -146,13 +140,13 @@ public class SaveWesteros extends Problem {
         List<Cell> stateWhiteWalkers;
         Cell nextAgentCell;
 
-        for (Operator operator : operators) {
-            switch (operator.getName()) {
+        for (String operator : operators) {
+            switch (operator) {
                 case "UP":
                     if (row > 0) {
                         nextAgentCell = cells[row - 1][col];
                         if (canVisitCell(nextAgentCell)) {
-                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator));
+                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, new Operator(operator, MOVE_COST)));
                         }
                     }
                     break;
@@ -160,7 +154,7 @@ public class SaveWesteros extends Problem {
                     if (row < grid.getM() - 1) {
                         nextAgentCell = cells[row + 1][col];
                         if (canVisitCell(nextAgentCell)) {
-                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator));
+                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, new Operator(operator, MOVE_COST)));
                         }
                     }
                     break;
@@ -168,7 +162,7 @@ public class SaveWesteros extends Problem {
                     if (col > 0) {
                         nextAgentCell = cells[row][col - 1];
                         if (canVisitCell(nextAgentCell)) {
-                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator));
+                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, new Operator(operator, MOVE_COST)));
                         }
                     }
                     break;
@@ -176,13 +170,13 @@ public class SaveWesteros extends Problem {
                     if (col < grid.getN() - 1) {
                         nextAgentCell = cells[row][col + 1];
                         if (canVisitCell(nextAgentCell)) {
-                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator));
+                            expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, new Operator(operator, MOVE_COST)));
                         }
                     }
                     break;
                 case "PICKUP":
                     if (stateAgentCell == dragonStone) {
-                        expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), stateAgentCell, agentCapacity), node, node.getDepth() + 1, operator));
+                        expansion.add(new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), stateAgentCell, agentCapacity), node, node.getDepth() + 1, new Operator(operator, PICKUP_COST)));
                     }
                     break;
                 case "KILL":

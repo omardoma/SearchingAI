@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Problem {
-    private List<Operator> operators;
+    private List<String> operators;
     private State initialState;
     private int depthLimit;
 
@@ -13,11 +13,11 @@ public abstract class Problem {
         depthLimit = Integer.MAX_VALUE;
     }
 
-    public List<Operator> getOperators() {
+    public List<String> getOperators() {
         return operators;
     }
 
-    public void setOperators(List<Operator> operators) {
+    public void setOperators(List<String> operators) {
         this.operators = operators;
     }
 
@@ -35,7 +35,7 @@ public abstract class Problem {
 
     public abstract boolean isGoal(State state);
 
-    public abstract List<Node> expand(Node node, List<Operator> operator);
+    public abstract List<Node> expand(Node node, List<String> operator);
 
     public static List<Node> getChosenExpandedNodes(Node node) {
         LinkedList<Node> nodes = new LinkedList<>();
