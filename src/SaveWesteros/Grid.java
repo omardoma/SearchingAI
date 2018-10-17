@@ -12,7 +12,7 @@ public class Grid {
     private Cell agentCell;
     private List<Cell> obstacles;
     private List<Cell> whiteWalkers;
-    public static final int MAX_DIMENSION = 20;
+    public static final int MAX_DIMENSION = 60;
     public static final int MIN_DIMENSION = 4;
     public static final int MIN_WHITE_WALKERS = 3;
     public static final int MIN_OBSTACLES = 3;

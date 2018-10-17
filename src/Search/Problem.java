@@ -17,7 +17,7 @@ public abstract class Problem {
         return operators;
     }
 
-    public void setOperators(List<String> operators) {
+    protected void setOperators(List<String> operators) {
         this.operators = operators;
     }
 
@@ -25,7 +25,7 @@ public abstract class Problem {
         return initialState;
     }
 
-    public void setInitialState(State initialState) {
+    protected void setInitialState(State initialState) {
         this.initialState = initialState;
     }
 
@@ -37,7 +37,9 @@ public abstract class Problem {
 
     public abstract List<Node> expand(Node node, List<String> operator);
 
-    public static List<Node> getChosenExpandedNodes(Node node) {
+    public abstract double calculatePathCost(Node node);
+
+    protected static List<Node> getChosenExpandedNodes(Node node) {
         LinkedList<Node> nodes = new LinkedList<>();
         while (node != null) {
             nodes.addFirst(node);
@@ -46,18 +48,11 @@ public abstract class Problem {
         return nodes;
     }
 
-    public static double calculatePathCost(Node node) {
-        if (node.isRootNode()) {
-            return 0;
-        }
-        return getChosenExpandedNodes(node).stream().skip(1).mapToDouble(currentNode -> node.getOperator().getCost()).sum();
-    }
-
     private static boolean isRepeatedState(State testState, List<State> repeatedStates) {
         return repeatedStates.stream().anyMatch(state -> state.isSame(testState));
     }
 
-    public static Node iterativeDeepeningSearch(Problem problem) {
+    protected static Node iterativeDeepeningSearch(Problem problem) {
         problem.depthLimit = 0;
         Node goalNode = null;
         while (problem.depthLimit < Integer.MAX_VALUE) {
@@ -70,8 +65,8 @@ public abstract class Problem {
         return goalNode;
     }
 
-    public static Node generalSearch(Problem problem, Strategy strategy) {
-        List<State> repeatedStates = new ArrayList();
+    protected static Node generalSearch(Problem problem, Strategy strategy) {
+        ArrayList<State> repeatedStates = new ArrayList<>();
         LinkedList<Node> nodes = new LinkedList<>();
         nodes.add(new Node(problem.initialState, null, 0, null));
         Node node;
@@ -93,7 +88,7 @@ public abstract class Problem {
                             nodes.addFirst(successorNode);
                             break;
                         case UC:
-                            if (calculatePathCost(node) < calculatePathCost(successorNode)) {
+                            if (problem.calculatePathCost(node) < problem.calculatePathCost(successorNode)) {
                                 nodes.addLast(successorNode);
                             } else {
                                 nodes.addFirst(successorNode);
