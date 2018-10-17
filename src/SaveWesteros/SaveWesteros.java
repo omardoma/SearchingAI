@@ -15,8 +15,8 @@ public class SaveWesteros extends Problem {
     private List<Cell> obstacles;
     private Cell dragonStone;
     private int agentCapacity;
-    public static final double PICKUP_COST = 6;
-    public static final double MOVE_COST = 5;
+    public static final double PICKUP_COST = 5;
+    public static final double MOVE_COST = 4;
     public static final double KILL_COST = 4;
 
     public SaveWesteros() {
@@ -210,6 +210,22 @@ public class SaveWesteros extends Problem {
         return node.isRootNode() ? 0 : node.getParent().getPathCost() + node.getOperator().getCost();
     }
 
+    @Override
+    public double evaluateHeuristicOne(Node node) {
+        SaveWesterosState state = (SaveWesterosState) node.getState();
+        Cell stateAgentCell = state.getAgentCell();
+        int stateWhiteWalkersCount = state.getWhiteWalkers().size();
+        int stateDragonGlass = state.getDragonGlass();
+        int killCost = (stateWhiteWalkersCount / 4) * stateDragonGlass;
+//        return killCost;
+        return stateDragonGlass > 0 ? killCost : ((Math.abs(dragonStone.getRow() - stateAgentCell.getRow()) + Math.abs(dragonStone.getCol() - stateAgentCell.getCol())) * MOVE_COST) + PICKUP_COST + killCost;
+    }
+
+    @Override
+    public double evaluateHeuristicTwo(Node node) {
+        return 0;
+    }
+
     public List search(Grid grid, Strategy strategy, boolean visualize) {
         this.grid = grid;
         prepareSearch();
@@ -240,7 +256,7 @@ public class SaveWesteros extends Problem {
 
     public static void main(String[] args) throws Exception {
         SaveWesteros saveWesteros = new SaveWesteros();
-        Grid grid = saveWesteros.genGrid(4);
+        Grid grid = saveWesteros.genGrid();
         List result;
 
         System.out.println("\n\n-------------------Breadth First-----------------\n\n");
@@ -298,5 +314,35 @@ public class SaveWesteros extends Problem {
             System.out.println("No Solution");
         }
         System.out.println("\n\n-------------------Iterative Deepening-----------------\n\n");
+
+
+        System.out.println("\n\n-------------------Greedy 1-----------------\n\n");
+
+        result = saveWesteros.search(grid, Strategy.GR1, false);
+        if (!result.isEmpty()) {
+            grid.printGridInfo();
+            System.out.println("Sequence of Moves: " + result.get(0));
+            System.out.println("Solution Cost: " + result.get(1));
+            System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
+        }
+
+        System.out.println("\n\n-------------------Greedy 1-----------------\n\n");
+
+
+        System.out.println("\n\n-------------------A* 1-----------------\n\n");
+
+        result = saveWesteros.search(grid, Strategy.AS1, false);
+        if (!result.isEmpty()) {
+            grid.printGridInfo();
+            System.out.println("Sequence of Moves: " + result.get(0));
+            System.out.println("Solution Cost: " + result.get(1));
+            System.out.println("No. of Expanded Nodes: " + result.get(2));
+        } else {
+            System.out.println("No Solution");
+        }
+
+        System.out.println("\n\n-------------------A* 1-----------------\n\n");
     }
 }

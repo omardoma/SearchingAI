@@ -39,6 +39,10 @@ public abstract class Problem {
 
     public abstract double calculatePathCost(Node node);
 
+    public abstract double evaluateHeuristicOne(Node node);
+
+    public abstract double evaluateHeuristicTwo(Node node);
+
     protected static List<Node> getChosenExpandedNodes(Node node) {
         LinkedList<Node> nodes = new LinkedList<>();
         while (node != null) {
@@ -89,6 +93,34 @@ public abstract class Problem {
                             break;
                         case UC:
                             if (problem.calculatePathCost(node) < problem.calculatePathCost(successorNode)) {
+                                nodes.addLast(successorNode);
+                            } else {
+                                nodes.addFirst(successorNode);
+                            }
+                            break;
+                        case GR1:
+                            if (problem.evaluateHeuristicOne(node) < problem.evaluateHeuristicOne(successorNode)) {
+                                nodes.addLast(successorNode);
+                            } else {
+                                nodes.addFirst(successorNode);
+                            }
+                            break;
+                        case GR2:
+                            if (problem.evaluateHeuristicTwo(node) < problem.evaluateHeuristicTwo(successorNode)) {
+                                nodes.addLast(successorNode);
+                            } else {
+                                nodes.addFirst(successorNode);
+                            }
+                            break;
+                        case AS1:
+                            if (problem.evaluateHeuristicOne(node) + problem.calculatePathCost(node) < problem.evaluateHeuristicOne(successorNode) + problem.calculatePathCost(successorNode)) {
+                                nodes.addLast(successorNode);
+                            } else {
+                                nodes.addFirst(successorNode);
+                            }
+                            break;
+                        case AS2:
+                            if (problem.evaluateHeuristicTwo(node) + problem.calculatePathCost(node) < problem.evaluateHeuristicTwo(successorNode) + problem.calculatePathCost(successorNode)) {
                                 nodes.addLast(successorNode);
                             } else {
                                 nodes.addFirst(successorNode);
