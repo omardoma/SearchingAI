@@ -127,7 +127,7 @@ public class Grid {
         } while (existingCoordinates.contains(tmpRow + " " + tmpCol));
         dragonStone = cells[tmpRow][tmpCol];
 
-        agentCapacity = new Random().nextInt((whiteWalkers.size() - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
+        agentCapacity = rand.nextInt((whiteWalkers.size() - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
     }
 
     public void printGridInfo() {

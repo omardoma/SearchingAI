@@ -253,7 +253,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 1-----------------\n\n");
 
 
-        Grid grid1 = saveWesteros.genGrid(6);
+        Grid grid1 = saveWesteros.genGrid(4);
         grid1.printGridInfo();
 
         System.out.println("\n\n-------------------Breadth First-----------------\n\n");
@@ -371,7 +371,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 2-----------------\n\n");
 
 
-        Grid grid2 = saveWesteros.genGrid(20);
+        Grid grid2 = saveWesteros.genGrid();
         grid2.printGridInfo();
 
 
