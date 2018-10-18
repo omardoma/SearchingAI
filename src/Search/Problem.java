@@ -9,10 +9,6 @@ public abstract class Problem {
     private State initialState;
     private int depthLimit;
 
-    public Problem() {
-        depthLimit = Integer.MAX_VALUE;
-    }
-
     public List<Operator> getOperators() {
         return operators;
     }

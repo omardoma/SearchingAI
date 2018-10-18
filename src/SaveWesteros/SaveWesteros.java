@@ -18,7 +18,6 @@ public class SaveWesteros extends Problem {
     public static final int MIN_AGENT_CAPACITY = 1;
 
     public SaveWesteros() {
-        super();
         initOperators();
         whiteWalkers = new ArrayList<>();
         obstacles = new ArrayList<>();
@@ -104,18 +103,6 @@ public class SaveWesteros extends Problem {
             dragonGlass--;
         }
         return new SaveWesterosState(clonedWhiteWalkers, currentAgentCell, dragonGlass);
-    }
-
-    public Grid genGrid() {
-        return new Grid();
-    }
-
-    public Grid genGrid(int n) throws Exception {
-        return new Grid(n);
-    }
-
-    public Grid genGrid(int m, int n) throws Exception {
-        return new Grid(m, n);
     }
 
     @Override
@@ -230,6 +217,18 @@ public class SaveWesteros extends Problem {
         return stateDragonGlass > 0 ? killCost : ((Math.abs(dragonStone.getRow() - stateAgentCell.getRow()) + Math.abs(dragonStone.getCol() - stateAgentCell.getCol())) * MOVE_COST) + PICKUP_COST + killCost;
     }
 
+    public Grid genGrid() {
+        return new Grid();
+    }
+
+    public Grid genGrid(int n) throws Exception {
+        return new Grid(n);
+    }
+
+    public Grid genGrid(int m, int n) throws Exception {
+        return new Grid(m, n);
+    }
+
     public List search(Grid grid, Strategy strategy, boolean visualize) {
         this.grid = grid;
         prepareSearch();
@@ -265,7 +264,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 1-----------------\n\n");
 
 
-        Grid grid1 = saveWesteros.genGrid(12);
+        Grid grid1 = saveWesteros.genGrid();
         grid1.printGridInfo();
 
         System.out.println("\n\n-------------------Breadth First-----------------\n\n");
@@ -383,7 +382,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 2-----------------\n\n");
 
 
-        Grid grid2 = saveWesteros.genGrid(12);
+        Grid grid2 = saveWesteros.genGrid();
         grid2.printGridInfo();
 
 
