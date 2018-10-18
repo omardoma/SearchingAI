@@ -19,8 +19,8 @@ public class Grid {
 
     public Grid() {
         Random rand = new Random();
-        m = rand.nextInt(MAX_DIMENSION + 1) + MIN_DIMENSION;
-        n = rand.nextInt(MAX_DIMENSION + 1) + MIN_DIMENSION;
+        m = rand.nextInt((MAX_DIMENSION - MIN_DIMENSION) + 1) + MIN_DIMENSION;
+        n = rand.nextInt((MAX_DIMENSION - MIN_DIMENSION) + 1) + MIN_DIMENSION;
         obstacles = new ArrayList<>();
         whiteWalkers = new ArrayList<>();
         cells = new Cell[m][n];
