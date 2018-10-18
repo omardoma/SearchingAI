@@ -12,10 +12,12 @@ public class Grid {
     private Cell agentCell;
     private List<Cell> obstacles;
     private List<Cell> whiteWalkers;
+    private int agentCapacity;
     public static final int MAX_DIMENSION = 60;
     public static final int MIN_DIMENSION = 4;
     public static final int MIN_WHITE_WALKERS = 3;
     public static final int MIN_OBSTACLES = 3;
+    public static final int MIN_AGENT_CAPACITY = 1;
 
     public Grid() {
         Random rand = new Random();
@@ -73,6 +75,10 @@ public class Grid {
         return whiteWalkers;
     }
 
+    public int getAgentCapacity() {
+        return agentCapacity;
+    }
+
     private void initCells() {
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
@@ -120,11 +126,14 @@ public class Grid {
             tmpCol = rand.nextInt(n);
         } while (existingCoordinates.contains(tmpRow + " " + tmpCol));
         dragonStone = cells[tmpRow][tmpCol];
+
+        agentCapacity = new Random().nextInt((whiteWalkers.size() - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
     }
 
     public void printGridInfo() {
         System.out.println("Generated Grid Size: " + m + " x " + n);
         System.out.println("No. of White Walkers: " + whiteWalkers.size());
         System.out.println("No. of Obstacles: " + obstacles.size());
+        System.out.println("Agent Capacity: " + agentCapacity);
     }
 }

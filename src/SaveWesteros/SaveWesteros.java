@@ -2,7 +2,10 @@ package SaveWesteros;
 
 import Search.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.OptionalInt;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -15,32 +18,11 @@ public class SaveWesteros extends Problem {
     public static final double PICKUP_COST = 5;
     public static final double MOVE_COST = 4;
     public static final double KILL_COST = 4;
-    public static final int MIN_AGENT_CAPACITY = 1;
 
     public SaveWesteros() {
         initOperators();
         whiteWalkers = new ArrayList<>();
         obstacles = new ArrayList<>();
-    }
-
-    public Grid getGrid() {
-        return grid;
-    }
-
-    public List<Cell> getWhiteWalkers() {
-        return whiteWalkers;
-    }
-
-    public List<Cell> getObstacles() {
-        return obstacles;
-    }
-
-    public Cell getDragonStone() {
-        return dragonStone;
-    }
-
-    public int getAgentCapacity() {
-        return agentCapacity;
     }
 
     private void initOperators() {
@@ -54,8 +36,8 @@ public class SaveWesteros extends Problem {
     private void prepareSearch() {
         whiteWalkers = grid.getWhiteWalkers();
         obstacles = grid.getObstacles();
-        agentCapacity = new Random().nextInt((whiteWalkers.size() - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
         dragonStone = grid.getDragonStone();
+        agentCapacity = grid.getAgentCapacity();
         super.setInitialState(new SaveWesterosState(cloneCells(whiteWalkers), grid.getAgentCell(), 0));
         super.setDepthLimit(Integer.MAX_VALUE);
     }
@@ -136,6 +118,7 @@ public class SaveWesteros extends Problem {
                         if (canVisitCell(nextAgentCell)) {
                             successorNode = new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator);
                             successorNode.setPathCost(calculatePathCost(successorNode));
+                            super.setNodeEvalCriteria(successorNode);
                             expansion.add(successorNode);
                         }
                     }
@@ -146,6 +129,7 @@ public class SaveWesteros extends Problem {
                         if (canVisitCell(nextAgentCell)) {
                             successorNode = new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator);
                             successorNode.setPathCost(calculatePathCost(successorNode));
+                            setNodeEvalCriteria(successorNode);
                             expansion.add(successorNode);
                         }
                     }
@@ -156,6 +140,7 @@ public class SaveWesteros extends Problem {
                         if (canVisitCell(nextAgentCell)) {
                             successorNode = new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator);
                             successorNode.setPathCost(calculatePathCost(successorNode));
+                            setNodeEvalCriteria(successorNode);
                             expansion.add(successorNode);
                         }
                     }
@@ -166,6 +151,7 @@ public class SaveWesteros extends Problem {
                         if (canVisitCell(nextAgentCell)) {
                             successorNode = new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), nextAgentCell, state.getDragonGlass()), node, node.getDepth() + 1, operator);
                             successorNode.setPathCost(calculatePathCost(successorNode));
+                            setNodeEvalCriteria(successorNode);
                             expansion.add(successorNode);
                         }
                     }
@@ -174,6 +160,7 @@ public class SaveWesteros extends Problem {
                     if (stateAgentCell == dragonStone) {
                         successorNode = new Node(new SaveWesterosState(cloneCells(state.getWhiteWalkers()), stateAgentCell, agentCapacity), node, node.getDepth() + 1, operator);
                         successorNode.setPathCost(calculatePathCost(successorNode));
+                        setNodeEvalCriteria(successorNode);
                         expansion.add(successorNode);
                     }
                     break;
@@ -183,6 +170,7 @@ public class SaveWesteros extends Problem {
                         SaveWesterosState newState = killWhiteWalkers(stateWhiteWalkers, stateAgentCell, state.getDragonGlass());
                         successorNode = new Node(newState, node, node.getDepth() + 1, new Operator("KILL", KILL_COST - (stateWhiteWalkers.size() - newState.getWhiteWalkers().size())));
                         successorNode.setPathCost(calculatePathCost(successorNode));
+                        setNodeEvalCriteria(successorNode);
                         expansion.add(successorNode);
                     }
                     break;
@@ -212,8 +200,8 @@ public class SaveWesteros extends Problem {
         Cell stateAgentCell = state.getAgentCell();
         int stateDragonGlass = state.getDragonGlass();
         List<Cell> stateWhiteWalkers = state.getWhiteWalkers();
-        OptionalDouble averageStepsOptional = stateWhiteWalkers.stream().mapToInt(cell -> (Math.abs(cell.getRow() - stateAgentCell.getRow()) + Math.abs(cell.getCol() - stateAgentCell.getCol()))).average();
-        double killCost = (averageStepsOptional.isPresent() ? averageStepsOptional.getAsDouble() : 0) * MOVE_COST * Math.abs(KILL_COST - stateWhiteWalkers.size());
+        OptionalInt averageStepsOptional = stateWhiteWalkers.stream().mapToInt(cell -> (Math.abs(cell.getRow() - stateAgentCell.getRow()) + Math.abs(cell.getCol() - stateAgentCell.getCol()))).min();
+        double killCost = (averageStepsOptional.isPresent() ? averageStepsOptional.getAsInt() : 0) * MOVE_COST * (stateWhiteWalkers.size() / 4) * stateDragonGlass;
         return stateDragonGlass > 0 ? killCost : ((Math.abs(dragonStone.getRow() - stateAgentCell.getRow()) + Math.abs(dragonStone.getCol() - stateAgentCell.getCol())) * MOVE_COST) + PICKUP_COST + killCost;
     }
 
@@ -231,6 +219,7 @@ public class SaveWesteros extends Problem {
 
     public List search(Grid grid, Strategy strategy, boolean visualize) {
         this.grid = grid;
+        super.setStrategy(strategy);
         prepareSearch();
         List result = new ArrayList();
         Node goalNode;
@@ -264,7 +253,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 1-----------------\n\n");
 
 
-        Grid grid1 = saveWesteros.genGrid();
+        Grid grid1 = saveWesteros.genGrid(6);
         grid1.printGridInfo();
 
         System.out.println("\n\n-------------------Breadth First-----------------\n\n");
@@ -382,7 +371,7 @@ public class SaveWesteros extends Problem {
         System.out.println("\n\n-------------------Grid 2-----------------\n\n");
 
 
-        Grid grid2 = saveWesteros.genGrid();
+        Grid grid2 = saveWesteros.genGrid(20);
         grid2.printGridInfo();
 
 
