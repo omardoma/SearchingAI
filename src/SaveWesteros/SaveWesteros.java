@@ -187,6 +187,9 @@ public class SaveWesteros extends Problem {
     @Override
     public double evaluateHeuristicOne(Node node) {
         SaveWesterosState state = (SaveWesterosState) node.getState();
+        if(isGoal(state)) {
+            return 0;
+        }
         Cell stateAgentCell = state.getAgentCell();
         int stateWhiteWalkersCount = state.getWhiteWalkers().size();
         int stateDragonGlass = state.getDragonGlass();
@@ -197,6 +200,9 @@ public class SaveWesteros extends Problem {
     @Override
     public double evaluateHeuristicTwo(Node node) {
         SaveWesterosState state = (SaveWesterosState) node.getState();
+        if(isGoal(state)) {
+            return 0;
+        }
         Cell stateAgentCell = state.getAgentCell();
         int stateDragonGlass = state.getDragonGlass();
         List<Cell> stateWhiteWalkers = state.getWhiteWalkers();
