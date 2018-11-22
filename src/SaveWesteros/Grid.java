@@ -89,11 +89,11 @@ public class Grid {
 
     private void generateMap() {
         Random rand = new Random();
-        int whiteWalkersNumber = rand.nextInt(n / 4) + MIN_WHITE_WALKERS;
-        int obstaclesNumber = rand.nextInt(n / 4) + MIN_OBSTACLES;
+        int whiteWalkersNumber = rand.nextInt((n - MIN_WHITE_WALKERS) + 1) + MIN_WHITE_WALKERS;
+        int obstaclesNumber = rand.nextInt((n - MIN_OBSTACLES) + 1) + MIN_OBSTACLES;
+        List<String> existingCoordinates = new ArrayList<>();
         int tmpRow = m - 1;
         int tmpCol = n - 1;
-        List<String> existingCoordinates = new ArrayList<>();
 
         // Place agent
         agentCell = cells[tmpRow][tmpCol];
@@ -127,7 +127,7 @@ public class Grid {
         } while (existingCoordinates.contains(tmpRow + " " + tmpCol));
         dragonStone = cells[tmpRow][tmpCol];
 
-        agentCapacity = rand.nextInt((whiteWalkers.size() - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
+        agentCapacity = rand.nextInt((whiteWalkersNumber - MIN_AGENT_CAPACITY) + 1) + MIN_AGENT_CAPACITY;
     }
 
     public void printGridInfo() {
